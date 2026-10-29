@@ -1,0 +1,36 @@
+name: Scaffold
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  scaffold:
+    name: Scaffold
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Validate scaffold hygiene
+        shell: python
+        run: |
+          import ast
+          import json
+          import pathlib
+          import re
+          root = pathlib.Path('.')
+          assert (root / 'README.md').is_file()
+          assert (root / 'AGENTS.md').is_file()
+          for path in root.rglob('*'):
+              if not path.is_file() or '.git' in path.parts:
+                  continue
+              assert path.suffix not in {'.pem', '.key', '.tfstate'}, str(path)
+              assert not path.name.startswith('.env'), str(path)
+              text = path.read_text()
+              assert not re.search(r'-----BEGIN [A-Z ]*PRIVATE KEY-----', text), str(path)
+              if path.suffix == '.json':
+                  json.loads(text)
+              if path.suffix == '.py':
+                  ast.parse(text)

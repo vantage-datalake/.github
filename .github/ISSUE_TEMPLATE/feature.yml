@@ -1,0 +1,10 @@
+name: Feature request
+description: Propose a focused product change
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Use fictional examples. Exclude credentials and institutional records.
+    validations:
+      required: true
